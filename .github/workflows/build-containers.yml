@@ -1,0 +1,41 @@
+name: Build and push Docker container
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to GHCR
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Determine metadata
+        run: |
+          SHORT_COMMIT=$(echo $GITHUB_SHA | cut -c1-8)
+          BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          echo "build_date=${BUILD_DATE}" | tee -a $GITHUB_ENV
+          echo "short_commit=${SHORT_COMMIT}" | tee -a $GITHUB_ENV
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build container
+        run: >
+          docker buildx build --push
+          --platform linux/amd64,linux/arm/v7,linux/arm64/v8
+          --build-arg BUILD_DATE=${{ env.build_date }}
+          --build-arg SOURCE_COMMIT=$GITHUB_SHA
+          -t "ghcr.io/sgsunder/prometheus-metar:${{ env.short_commit }}"
+          -t "ghcr.io/sgsunder/prometheus-metar:latest"
+          .

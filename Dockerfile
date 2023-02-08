@@ -14,7 +14,7 @@ ARG BUILD_DATE="Unknown"
 ARG SOURCE_COMMIT="Unknown"
 LABEL \
     maintainer="" \
-    org.opencontainers.image.title="sgsunder/prometheus-metar" \
+    org.opencontainers.image.title="ghcr.io/sgsunder/prometheus-metar" \
     org.opencontainers.image.url="https://github.com/sgsunder/prometheus-metar" \
     org.opencontainers.image.created="${BUILD_DATE}" \
     org.opencontainers.image.source="https://github.com/sgsunder/prometheus-metar" \

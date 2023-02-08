@@ -10,13 +10,12 @@ from prometheus_client import Gauge
 
 UPDATE_BUFFER_SEC = 300
 
-update_time = Gauge("update_time", "Last Update Time for METAR", ["station"])
-wind_direction = Gauge("wind_direction", "Wind Direction, in degrees", ["station"])
-wind_speed = Gauge("wind_speed", "Wind Speed, in m/s", ["station"])
-visibility = Gauge("visibility", "Visibility, in meters", ["station"])
-temperature = Gauge("temperature", "Temperature, in °C", ["station"])
-dewpoint = Gauge("dewpoint", "Dewpoint, in °C", ["station"])
-barometer = Gauge("barometer", "Barometric Pressure, in Pa", ["station"])
+wind_direction = Gauge("metar_wind_direction", "Wind Direction, in degrees", ["station"])
+wind_speed = Gauge("metar_wind_speed", "Wind Speed, in m/s", ["station"])
+visibility = Gauge("metar_visibility", "Visibility, in meters", ["station"])
+temperature = Gauge("metar_temperature", "Temperature, in °C", ["station"])
+dewpoint = Gauge("metar_dewpoint", "Dewpoint, in °C", ["station"])
+barometer = Gauge("metar_barometer", "Barometric Pressure, in Pa", ["station"])
 
 
 def update_metrics_for_station(station: str) -> datetime:

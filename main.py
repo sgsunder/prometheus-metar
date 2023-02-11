@@ -38,15 +38,19 @@ def update_metrics_for_station(station: str) -> datetime:
 
 def station_daemon(station: str) -> None:
     while True:
-        metar_update_time = update_metrics_for_station(station)
-        next_update_time = (
-            metar_update_time + timedelta(hours=1) + timedelta(seconds=UPDATE_BUFFER_SEC)
-        )
-        print(f"Updated {station} on {metar_update_time.isoformat()}")
-        wait_time = (next_update_time - datetime.utcnow()).total_seconds()
-        if wait_time >= 0:
-            sleep(wait_time)
-        else:  # station update is overdue for some reason
+        try:
+            metar_update_time = update_metrics_for_station(station)
+            next_update_time = metar_update_time + timedelta(hours=1)
+            print(f"Updated {station} on {metar_update_time.isoformat()}")
+            wait_time = (next_update_time - datetime.utcnow()).total_seconds()
+            if wait_time >= 0:
+                sleep(wait_time)
+        except Exception:
+            # Ingore all errors
+            pass
+        finally:
+            # Regardless of error status, sleep an additional buffer period
+            # then try again
             sleep(UPDATE_BUFFER_SEC)
 
 

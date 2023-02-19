@@ -1,3 +1,4 @@
+import logging
 from argparse import ArgumentParser
 from datetime import datetime, timedelta
 from threading import Thread
@@ -10,6 +11,8 @@ from prometheus_client import Gauge
 
 UPDATE_BUFFER_SEC = 300
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 wind_direction = Gauge("metar_wind_direction", "Wind Direction, in degrees", ["station"])
 wind_speed = Gauge("metar_wind_speed", "Wind Speed, in m/s", ["station"])
 visibility = Gauge("metar_visibility", "Visibility, in meters", ["station"])
@@ -41,13 +44,13 @@ def station_daemon(station: str) -> None:
         try:
             metar_update_time = update_metrics_for_station(station)
             next_update_time = metar_update_time + timedelta(hours=1)
-            print(f"Updated {station} on {metar_update_time.isoformat()}")
+            logger.info(f"Updated {station} on {metar_update_time.isoformat()}")
             wait_time = (next_update_time - datetime.utcnow()).total_seconds()
             if wait_time >= 0:
                 sleep(wait_time)
-        except Exception:
+        except Exception as e:
             # Ingore all errors
-            pass
+            logger.exception(e)
         finally:
             # Regardless of error status, sleep an additional buffer period
             # then try again
@@ -60,7 +63,7 @@ def main() -> None:
     args = parser.parse_args()
 
     threads = [
-        Thread(target=station_daemon, args=(station,), daemon=True, name=station)
+        Thread(target=station_daemon, args=(station,), name=station)
         for station in args.station
     ]
 
@@ -71,9 +74,6 @@ def main() -> None:
     prometheus_client.REGISTRY.unregister(prometheus_client.PLATFORM_COLLECTOR)
     prometheus_client.REGISTRY.unregister(prometheus_client.PROCESS_COLLECTOR)
     prometheus_client.start_http_server(port=3000)
-
-    for thread in threads:
-        thread.join()
 
 
 if __name__ == "__main__":
